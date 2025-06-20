@@ -5,24 +5,31 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
+use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Number;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
-
+protected static ?int $navigationSort = 5;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     public static function form(Form $form): Form
@@ -107,47 +114,98 @@ class OrderResource extends Resource
                             ->relationship('product', 'name')
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->distinct()
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->reactive()
+                            ->afterStateUpdated(fn($state, Set $set) => $set('unit_amount',Product::find($state)?->price ?? 0))
+                            ->afterStateUpdated(fn($state, Set $set) => $set('total_amount',Product::find($state)?->price ?? 0))
+                            ->columnSpan(4),
                         Forms\Components\TextInput::make('quantity')
                             ->required()
                             ->numeric()
                             ->minValue(1)
-                            ->default(1),
-                        Forms\Components\TextInput::make('price')
+                            ->default(1)
+                            ->afterStateUpdated(fn($state, Set $set, Get $get)=>$set('total_amount', $state * $get('unit_amount')))
+                             ->columnSpan(2)
+                             ->reactive(),
+                        Forms\Components\TextInput::make('unit_amount')
                             ->required()
                             ->numeric()
-                            ->minValue(0)
-                            ->maxValue(1000000)
-                            ->default(0)
-                            ->prefix('₱'),
-                    ])
-                ])
-             ])->columnSpanFull(),
-            ]);
-    }
+                          ->disabled()
+                          ->dehydrated()
+                           ->columnSpan(3),
+                        Forms\Components\TextInput::make('total_amount')
+                            ->required()
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated()
+                            ->columnSpan(3),
+                    ])->columns(12),
+                  Placeholder::make('grand_total_placeholder')
+                         ->label('Grand Total')
+                         ->content(function (Get $get, Set $set) {
+                              $total = 0;
+                             if (!$repeaters = $get('items')) {
+                               return $total;
+                         }
+                              foreach ($repeaters as $key => $repeater) {
+                             $total += $get("items.{$key}.total_amount") ?? 0;
+                          }
+                          $set('grand_total', $total);
+                          return Number::currency($total, 'PHP');
+                          }),
+                          Hidden::make('grand_total')
+                          ->default(0)
+
+                     
+                         ])
+                         ])->columnSpanFull()
+                         ]);
+                        }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('user.name')
+                   ->searchable()
+                    ->label('Customer')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('grand_total')
+                 Tables\Columns\TextColumn::make('grand_total')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->money('PHP')
+                    ->label('Grand Total')
+                   ->searchable(),
+                   
                 Tables\Columns\TextColumn::make('payment_method')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('payment_status')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('currency')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('shipping_amount')
-                    ->numeric()
+                    ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('shipping_method')
+                Tables\Columns\TextColumn::make('payment_status')
+                   ->sortable() ->searchable(),
+                    Tables\Columns\TextColumn::make('currency')
+                    ->searchable()
+                    ->sortable(),
+                    Tables\Columns\TextColumn::make('shipping_method')
+                    ->searchable()
+                    ->sortable(),
+                SelectColumn::make('status')
+                    ->options([
+                        'new' => 'New',
+                        'processing' => 'Processing',
+                        'shipped' => 'Shipped',
+                        'delivered' => 'Delivered',
+                        'cancelled' => 'Cancelled',
+                    ])
+                 
+                    ->sortable()
                     ->searchable(),
+               
+                // Tables\Columns\TextColumn::make('shipping_amount')
+                //     ->numeric()
+                //     ->sortable(),
+                
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -161,8 +219,11 @@ class OrderResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                  Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -174,10 +235,19 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\AddressRelationManager::class,
+            
         ];
     }
+    public static function getNavigationBadge(): ?string
+    {
+        return Order::count() > 0 ? (string) Order::count() : null;
+    }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::count()>10 ? 'danger' : 'success';
+    }
     public static function getPages(): array
     {
         return [
