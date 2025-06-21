@@ -119,38 +119,20 @@
                     </div>
                 </div>
                 <div class="justify-center max-w-6xl px-4 py-4 mx-auto lg:py-0">
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <!-- Brand 1 -->
-                        <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                            <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80" alt="Pfizer" class="object-cover w-full h-64 rounded-t-lg" />
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4" >
+                        @foreach ($brands as $brand )
+                              <!-- Brand 1 -->
+                        <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow" wire:key='{{ $brand->id }}'>
+                            <a href="/products?selected_brands[0]={{ $brand->id }}" class="">
+                            <img src="{{ url('storage', $brand->image) }}" alt="{{ $brand->name }}" />
+                            </a>
                             <div class="p-5 text-center">
-                                <h3 class="text-2xl font-bold tracking-tight text-gray-900">Pfizer</h3>
+                                <h3 class="text-2xl font-bold tracking-tight text-gray-900">{{$brand->name}}</h3>
                             </div>
                         </div>
+                        @endforeach
+                      
 
-                        <!-- Brand 2 -->
-                        <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                            <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80" alt="Johnson & Johnson" class="object-cover w-full h-64 rounded-t-lg" />
-                            <div class="p-5 text-center">
-                                <h3 class="text-2xl font-bold tracking-tight text-gray-900">Johnson & Johnson</h3>
-                            </div>
-                        </div>
-
-                        <!-- Brand 3 -->
-                        <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                            <img src="https://images.unsplash.com/photo-1585435557343-3b092031d4c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80" alt="Novartis" class="object-cover w-full h-64 rounded-t-lg" />
-                            <div class="p-5 text-center">
-                                <h3 class="text-2xl font-bold tracking-tight text-gray-900">Novartis</h3>
-                            </div>
-                        </div>
-
-                        <!-- Brand 4 -->
-                        <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                            <img src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80" alt="GSK" class="object-cover w-full h-64 rounded-t-lg" />
-                            <div class="p-5 text-center">
-                                <h3 class="text-2xl font-bold tracking-tight text-gray-900">GSK</h3>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -178,35 +160,16 @@
                 <div class="max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto">
                     <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                         <!-- Category 1 -->
-                        <a href="#" class="group flex flex-col bg-white border shadow-sm rounded-xl hover:shadow-md transition">
-                            <div class="p-4 md:p-5">
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center">
-                                        <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80" alt="Prescription Medicines" />
-                                        <div class="ms-3">
-                                            <h3 class="group-hover:text-green-600 font-semibold text-gray-800">
-                                                Prescription Medicines
-                                            </h3>
-                                        </div>
-                                    </div>
-                                    <div class="ps-3">
-                                        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
 
-                        <!-- Category 2 -->
-                        <a href="#" class="group flex flex-col bg-white border shadow-sm rounded-xl hover:shadow-md transition">
+                        @foreach ($categories as $category )
+                              <a  href="/products?selected_categories[0]={{ $category->id }}" class="group flex flex-col bg-white border shadow-sm rounded-xl hover:shadow-md transition"   wire:key="{{ $category->id }}">
                             <div class="p-4 md:p-5">
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center">
-                                        <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1471864190281-a93a3070b6de?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80" alt="Over-the-Counter" />
+                                        <img class="h-10 w-10 rounded-full" src="{{ url('storage', $category->image) }}" />
                                         <div class="ms-3">
                                             <h3 class="group-hover:text-green-600 font-semibold text-gray-800">
-                                                Over-the-Counter
+                                                {{ $category->name }}
                                             </h3>
                                         </div>
                                     </div>
@@ -218,48 +181,8 @@
                                 </div>
                             </div>
                         </a>
-
-                        <!-- Category 3 -->
-                        <a href="#" class="group flex flex-col bg-white border shadow-sm rounded-xl hover:shadow-md transition">
-                            <div class="p-4 md:p-5">
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center">
-                                        <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1550572017-edd951aa8f72?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80" alt="Vitamins & Supplements" />
-                                        <div class="ms-3">
-                                            <h3 class="group-hover:text-green-600 font-semibold text-gray-800">
-                                                Vitamins & Supplements
-                                            </h3>
-                                        </div>
-                                    </div>
-                                    <div class="ps-3">
-                                        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <!-- Category 4 -->
-                        <a href="#" class="group flex flex-col bg-white border shadow-sm rounded-xl hover:shadow-md transition">
-                            <div class="p-4 md:p-5">
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center">
-                                        <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1556228720-195a672e8a03?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80" alt="Personal Care" />
-                                        <div class="ms-3">
-                                            <h3 class="group-hover:text-green-600 font-semibold text-gray-800">
-                                                Personal Care
-                                            </h3>
-                                        </div>
-                                    </div>
-                                    <div class="ps-3">
-                                        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
+                        @endforeach
+                      
                     </div>
                 </div>
             </div>

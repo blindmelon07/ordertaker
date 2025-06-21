@@ -48,7 +48,7 @@ class BrandResource extends Resource
                   Forms\Components\FileUpload::make('image')
                         ->image()
                         ->required()
-                        ->directory('categories')
+                        ->directory('brands')
                         ->preserveFilenames(),
                 Forms\Components\Toggle::make('is_active')
                         ->required()
